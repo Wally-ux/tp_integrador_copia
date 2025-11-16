@@ -13,13 +13,13 @@ import java.util.List;
 public class HistoriaClinicaDAO implements DAO<HistoriaClinica> {
     
         private static final String INSERT_SQL = """
-        INSERT INTO clinica2.historia_clinica
+        INSERT INTO historia_clinica
             (eliminado, nro_historia, grupo_sanguineo, antecedentes, medicacion_actual, observaciones)
         VALUES (?, ?, ?, ?, ?, ?)
         """;
 
     private static final String UPDATE_SQL = """
-        UPDATE clinica2.historia_clinica
+        UPDATE historia_clinica
            SET eliminado = ?, nro_historia = ?, grupo_sanguineo = ?, antecedentes = ?, 
                medicacion_actual = ?, observaciones = ?
          WHERE id = ?
@@ -27,26 +27,26 @@ public class HistoriaClinicaDAO implements DAO<HistoriaClinica> {
 
     // LOGIG delete
     private static final String SOFT_DELETE_SQL = """
-        UPDATE clinica2.historia_clinica SET eliminado = 1 WHERE id = ?
+        UPDATE historia_clinica SET eliminado = 1 WHERE id = ?
         """;
 
     private static final String SELECT_BY_ID_SQL = """
         SELECT id, eliminado, nro_historia, grupo_sanguineo, antecedentes, medicacion_actual, observaciones
-          FROM clinica2.historia_clinica
+          FROM historia_clinica
          WHERE id = ?
         """;
 
     // Solo activos (eliminado = 0)
     private static final String SELECT_ALL_SQL = """
         SELECT id, eliminado, nro_historia, grupo_sanguineo, antecedentes, medicacion_actual, observaciones
-          FROM clinica2.historia_clinica
+          FROM historia_clinica
          WHERE eliminado = 0
          ORDER BY nro_historia
         """;
     
         private static final String SELECT_ALL_SQL_ID = """
         SELECT id, eliminado, nro_historia, grupo_sanguineo, antecedentes, medicacion_actual, observaciones
-          FROM clinica2.historia_clinica
+          FROM historia_clinica
          WHERE eliminado = 0
          ORDER BY id
         """;
@@ -66,7 +66,7 @@ public class HistoriaClinicaDAO implements DAO<HistoriaClinica> {
 
     @Override
     public void insertTx(HistoriaClinica h, Connection conn) throws Exception {
-        if (h == null) throw new IllegalArgumentException("paciente no puede ser null");
+        if (h == null) throw new IllegalArgumentException("Historia Clinica no puede ser null");
         if (conn == null) throw new IllegalArgumentException("conn no puede ser null");
         insertarInterno(h, conn);
     }
@@ -102,13 +102,18 @@ public class HistoriaClinicaDAO implements DAO<HistoriaClinica> {
         try (Connection conn = DataBaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
 
-            ps.setBoolean(1, h.isEliminado());
-            ps.setString(2, h.getNroHistoria());
-            ps.setString(3, h.getGrupoSanguineo().toString());
-            ps.setString(4, h.getAntecedentes());
-            ps.setString(5, h.getMedicacionActual());
-            ps.setString(6, h.getObservaciones());
+               ps.setBoolean(1, h.isEliminado());
+               ps.setString(2, h.getNroHistoria());
+               ps.setString(3, h.getGrupoSanguineo().toString());
+               ps.setString(4, h.getAntecedentes());
+               ps.setString(5, h.getMedicacionActual());
+               ps.setString(6, h.getObservaciones());
+               ps.setLong(7, h.getId());  // importante para ir a buscarlo mediante el Where
             
+               int rows = ps.executeUpdate(); //ejecuta el update en la base y devuelve un int con la cantidad de filas afectadas
+               if (rows == 0) { //si no hay ninguna fila actualizada 
+               throw new SQLException("No se actualizó ninguna historia clínica (id=" + h.getId() + ")");
+        }
         }
     }
     

@@ -15,23 +15,25 @@ import java.util.Scanner;
  * @author agust
  */
 public class AppMenu {
-    //servicios para manerjar la logica de gestion de paciente 
+      // Servicios para manejar la lógica de gestión de paciente e historia clínica
     private final Service<Paciente> pacienteService;
     private final Service<HistoriaClinica> historiaService;
-    
-    //Scanner para leer desede la consola
+
+    // Scanner para leer desde la consola
     private final Scanner sc = new Scanner(System.in);
-    //Constructor:recibe ambos servicios (paciente e historia Clinica)
+
+    // Constructor: recibe ambos servicios (paciente e historia clínica)
     public AppMenu(Service<Paciente> pacienteService,
                    Service<HistoriaClinica> historiaService) {
         this.pacienteService = pacienteService;
         this.historiaService = historiaService;
     }
-    //Declaramos variable opcion
+
+    // Declaramos variable opcion
     public void iniciar() {
-        int opcion = -1; //Inicializamos -1 para entrrar al menu , o salir d
-            
-             // mientras el usuario NO elija 0, seguimos mostrando el menú
+        int opcion = -1; // Inicializamos -1 para entrar al menú
+
+        // mientras el usuario NO elija 0, seguimos mostrando el menú
         while (opcion != 0) {
 
             System.out.println("\n===== MENÚ CLÍNICA =====");
@@ -46,7 +48,7 @@ public class AppMenu {
             System.out.print("Opción: ");
 
             try {
-                //toma la opcion como numero
+                // toma la opción como número
                 opcion = Integer.parseInt(sc.nextLine());
 
                 if (opcion == 1) crearPaciente();
@@ -57,14 +59,14 @@ public class AppMenu {
                 else if (opcion == 6) crearHistoria();
                 else if (opcion == 7) listarHistorias();
                 else if (opcion == 0) System.out.println("Saliendo...");
-                else System.out.println(" Opción inválida.");
+                else System.out.println("Opción inválida.");
 
             } catch (Exception e) {
-                System.out.println(" Error: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             }
         }
     }
-        
+
     // ======================
     // CRUD PACIENTE
     // ======================
@@ -91,14 +93,14 @@ public class AppMenu {
         p.setDni(dni);
         p.setFechaNacimiento(fecha);
         p.setEliminado(false);
-         p.setGrupoSanguineo(GrupoSanguineo.O_POS); // valor por defecto
-         
-        pacienteService.insertar(p);
-        
-        System.out.println(" Paciente creado con ID: " + p.getId());
-         }
+        p.setGrupoSanguineo(GrupoSanguineo.O_POS); // valor por defecto
 
-        private void listarPacientes() throws Exception {
+        pacienteService.insertar(p);
+
+        System.out.println("Paciente creado con ID: " + p.getId());
+    }
+
+    private void listarPacientes() throws Exception {
         System.out.println("\n--- Listado Pacientes ---");
         List<Paciente> lista = pacienteService.getAll();
 
@@ -118,22 +120,21 @@ public class AppMenu {
         Paciente encontrado = null;
 
         for (Paciente p : lista) {
-               // Si todavía no encontré nada y coincide el DNI
+            // Si todavía no encontré nada y coincide el DNI
             if (encontrado == null && p.getDni().equalsIgnoreCase(dniBuscado)) {
-                    encontrado = p;   // Lo guardo
-                }
+                encontrado = p;   // Lo guardo
             }
-               // Mostrar el resultado
-             if (encontrado == null) {
-                     System.out.println(" No existe paciente con DNI " + dniBuscado);
-              } else {
-                      System.out.println("️ Paciente encontrado:");
-                      System.out.println(encontrado);
-               }
+        }
+        // Mostrar el resultado
+        if (encontrado == null) {
+            System.out.println("No existe paciente con DNI " + dniBuscado);
+        } else {
+            System.out.println("Paciente encontrado:");
+            System.out.println(encontrado);
+        }
     }
 
-  
-         private void actualizarPaciente() throws Exception {
+    private void actualizarPaciente() throws Exception {
         System.out.println("\n--- Actualizar Paciente ---");
 
         System.out.print("ID del paciente: ");
@@ -142,7 +143,7 @@ public class AppMenu {
         Paciente p = pacienteService.getById(id);
 
         if (p == null) {
-            System.out.println(" No existe un paciente con ese ID.");
+            System.out.println("No existe un paciente con ese ID.");
             return;
         }
 
@@ -158,7 +159,7 @@ public class AppMenu {
         System.out.println("✔️ Paciente actualizado.");
     }
 
-         private void eliminarPaciente() throws Exception {
+    private void eliminarPaciente() throws Exception {
         System.out.println("\n--- Eliminar Paciente (Lógico) ---");
 
         System.out.print("ID del paciente: ");
@@ -175,20 +176,73 @@ public class AppMenu {
     private void crearHistoria() throws Exception {
         System.out.println("\n--- Crear Historia Clínica ---");
 
-        System.out.print("Número historia: ");
-        String número = sc.nextLine().trim().toUpperCase();
+        // Mostrar pacientes para que el usuario vea los IDs
+        System.out.println("Pacientes disponibles:");
+        listarPacientes();  // usa tu opción 2 internamente
 
+        // 1) Elegir paciente al que se le va a crear la HC
+        System.out.print("ID del paciente: ");
+        long idPaciente = Long.parseLong(sc.nextLine());
+
+        Paciente paciente = pacienteService.getById(idPaciente);
+        if (paciente == null) {
+            System.out.println("✗ No existe un paciente con ese ID.");
+            return;
+        }
+
+        // 2) Verificar que NO tenga ya una historia clínica (relación 1→1)
+        if (paciente.getHistoriaClinica() != null) {
+            System.out.println("✗ El paciente ya tiene una historia clínica asociada (ID HC = "
+                    + paciente.getHistoriaClinica().getId() + ")");
+            return;
+        }
+
+        // 3) Pedir datos de la historia clínica
+        System.out.print("Número historia (ej: HC001): ");
+        String numero = sc.nextLine().trim().toUpperCase();
+
+        System.out.print("Grupo sanguíneo (ej: O_POS): ");
+        String gsTxt = sc.nextLine().trim().toUpperCase();
+
+        GrupoSanguineo grupo;
+        try {
+            grupo = GrupoSanguineo.valueOf(gsTxt); // debe coincidir con el enum
+        } catch (IllegalArgumentException e) {
+            System.out.println("Grupo sanguíneo inválido, se usará O_POS por defecto.");
+            grupo = GrupoSanguineo.O_POS;
+        }
+
+        System.out.print("Antecedentes (vacío = SIN ANTECEDENTES): ");
+        String antecedentes = sc.nextLine().trim();
+        if (antecedentes.isEmpty()) antecedentes = "SIN ANTECEDENTES";
+
+        System.out.print("Medicación actual (vacío = NINGUNA): ");
+        String medicacion = sc.nextLine().trim();
+        if (medicacion.isEmpty()) medicacion = "NINGUNA";
+
+        System.out.print("Observaciones (vacío = NINGUNA): ");
+        String observaciones = sc.nextLine().trim();
+        if (observaciones.isEmpty()) observaciones = "NINGUNA";
+
+        // 4) Crear objeto HistoriaClinica
         HistoriaClinica h = new HistoriaClinica(
-                número,
-                GrupoSanguineo.O_POS,
-                "SIN ANTECEDENTES",
-                "NINGUNA",
-                "NINGUNA"
+                numero,
+                grupo,
+                antecedentes,
+                medicacion,
+                observaciones
         );
         h.setEliminado(false);
 
+        // 5) Guardar la historia clínica en la BD
         historiaService.insertar(h);
-        System.out.println("✔️ Historia creada con ID: " + h.getId());
+
+        // 6) Asociar la HC al paciente (relación 1→1 unidireccional)
+        paciente.setHistoriaClinica(h);
+        pacienteService.actualizar(paciente);
+
+        System.out.println("✔️ Historia creada con ID: " + h.getId()
+                + " y asociada al paciente " + paciente.getNombre() + " " + paciente.getApellido());
     }
 
     private void listarHistorias() throws Exception {
@@ -202,4 +256,3 @@ public class AppMenu {
         lista.forEach(System.out::println);
     }
 }
-

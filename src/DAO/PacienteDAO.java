@@ -17,7 +17,7 @@ public class PacienteDAO implements DAO<Paciente> {
         """;
 
     private static final String UPDATE_SQL = """
-        UPDATE historia_clinica
+        UPDATE paciente
            SET nombre = ?, apellido = ?, dni = ?, fecha_nacimiento = ?, 
                historia_clinica_id = ?, eliminado = ?
          WHERE id = ?
@@ -25,19 +25,19 @@ public class PacienteDAO implements DAO<Paciente> {
 
     // LOGIG delete
     private static final String SOFT_DELETE_SQL = """
-        UPDATE clinica2.paciente SET eliminado = 1 WHERE id = ?
+        UPDATE paciente SET eliminado = 1 WHERE id = ?
         """;
 
     private static final String SELECT_BY_ID_SQL = """
         SELECT id, nombre, apellido, dni, fecha_nacimiento, historia_clinica_id, eliminado
-          FROM clinica2.paciente
+          FROM paciente
          WHERE id = ?
         """;
 
     // Solo activos (eliminado = 0)
     private static final String SELECT_ALL_SQL = """
         SELECT id, nombre, apellido, dni, fecha_nacimiento, historia_clinica_id, eliminado
-          FROM clinica2.paciente
+          FROM paciente
          WHERE eliminado = 0
          ORDER BY apellido, nombre
         """;

@@ -17,18 +17,20 @@ import Service.Service;
 public class Main {
         public static void main(String[] args) {
 
-        // 1) Crear los DAO (acceso a base de datos)
+         // 1) Crear los DAO (acceso a base de datos)
         PacienteDAO pacienteDAO = new PacienteDAO();
         HistoriaClinicaDAO historiaDAO = new HistoriaClinicaDAO();
 
         // 2) Crear los Service, inyectando los DAO
-        Service<Paciente> pacienteService = new PacienteServiceImpl(pacienteDAO);
-        Service<HistoriaClinica> historiaService = new HistoriaClinicaServiceImpl(historiaDAO);
+        Service<Paciente> pacienteService =
+                new PacienteServiceImpl(pacienteDAO);
+        Service<HistoriaClinica> historiaService =
+                new HistoriaClinicaServiceImpl(historiaDAO);
 
-        // 3) Crear el menú y pasarlo los servicios
+        // 3) Crear el menú y pasarle los servicios
         AppMenu menu = new AppMenu(pacienteService, historiaService);
 
-        // 4) Iniciar la aplicación de consola
+        // 4) Main invoca AppMenu (como pide el TP)
         menu.iniciar();
     }
 }
