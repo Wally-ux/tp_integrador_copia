@@ -35,6 +35,12 @@ public class Paciente {
         this.grupoSanguineo = grupoSanguineo;
         this.eliminado = false;
     }
+       public Paciente(String nombre, String apellido, String dni) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.dni = dni;
+        // el id queda null, la historia clínica y grupo sanguíneo los podés setear después si querés
+    }
     // Constructor sobrecargado?
 
     public long getId() {
